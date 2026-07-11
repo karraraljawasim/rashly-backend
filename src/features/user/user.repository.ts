@@ -37,8 +37,11 @@ export class UserRepository {
     return result;
   }
 
-  async findById(id: string) {
-    const [result] = await this.db.select().from(users).where(eq(users.id, id));
+  async findById(userId: string) {
+    const [result] = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId));
 
     return result;
   }

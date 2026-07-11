@@ -25,6 +25,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = await this.userService.findById(payload.sub);
     if (!user) return null;
 
-    return user;
+    const { passwordHash: _, ...safeUser } = user;
+
+    return safeUser;
   }
 }

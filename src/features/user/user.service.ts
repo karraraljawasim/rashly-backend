@@ -32,12 +32,24 @@ export class UserService {
     return user;
   }
 
-  async findById(id: string) {
-    const user = await this.userRepository.findById(id);
+  async findById(userId: string) {
+    const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
     return user;
+  }
+  async getMyProfile(userId: string) {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return {
+      id: userId,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+    };
   }
 }

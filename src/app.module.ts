@@ -5,9 +5,10 @@ import { CoreModule } from './core/core.module';
 import { UserModule } from './features/user/user.module';
 import { AuthModule } from './features/auth/auth.module';
 import { SharedModule } from './shared/shared.module';
+import { EventModule } from './features/event/event.module';
 
 @Module({
-  imports: [CoreModule, UserModule, AuthModule, SharedModule],
+  imports: [CoreModule, UserModule, AuthModule, SharedModule, EventModule],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -15,6 +15,20 @@
       "when": 1783689210809,
       "tag": "0001_needy_ink",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783772500554,
+      "tag": "0002_wet_the_hand",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1783779813260,
+      "tag": "0003_lumpy_wither",
+      "breakpoints": true
     }
   ]
 }
