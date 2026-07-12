@@ -8,10 +8,6 @@ import * as schema from '../../core/database/schema';
 import { events } from './schema/event.schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { eq } from 'drizzle-orm';
-import { UpdateEventDto } from './dto/update-event.dto';
-import { IsDate, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
-import { IsBefore, IsFutureDate } from '../../shared/validators/date.validator';
 
 @Injectable()
 export class EventRepository {

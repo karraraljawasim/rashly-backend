@@ -6,9 +6,17 @@ import { UserModule } from './features/user/user.module';
 import { AuthModule } from './features/auth/auth.module';
 import { SharedModule } from './shared/shared.module';
 import { EventModule } from './features/event/event.module';
+import { InventoryModule } from './features/inventory/inventory.module';
 
 @Module({
-  imports: [CoreModule, UserModule, AuthModule, SharedModule, EventModule],
+  imports: [
+    CoreModule,
+    UserModule,
+    AuthModule,
+    SharedModule,
+    EventModule,
+    InventoryModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
