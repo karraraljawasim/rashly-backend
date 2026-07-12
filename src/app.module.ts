@@ -7,6 +7,7 @@ import { AuthModule } from './features/auth/auth.module';
 import { SharedModule } from './shared/shared.module';
 import { EventModule } from './features/event/event.module';
 import { InventoryModule } from './features/inventory/inventory.module';
+import { BookingModule } from './features/booking/booking.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { InventoryModule } from './features/inventory/inventory.module';
     SharedModule,
     EventModule,
     InventoryModule,
+    BookingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
