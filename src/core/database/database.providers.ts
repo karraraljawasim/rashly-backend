@@ -16,10 +16,14 @@ export const databaseProviders: Provider[] = [
         connectionString: configService.get<string>('DATABASE_URL'),
       });
       try {
-        await pool.query('SELECT 1');
+        const client = await pool.connect();
+        await client.query('SELECT 1');
+        client.release();
         logger.log('Database Connected');
       } catch (error) {
-        logger.error('Failed to connect to the database: ', error);
+        logger.error('Failed to connect to the database');
+        await pool.end();
+        throw error;
       }
 
       return drizzle(pool, { schema }) as NodePgDatabase<typeof schema>;
