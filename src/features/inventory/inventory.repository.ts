@@ -7,7 +7,7 @@ import { DATABASE_CONNECTION } from '../../core/database/database.providers';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '../../core/database/schema';
 import { inventoryItems } from './schema/inventory.schema';
-import { eq } from 'drizzle-orm';
+import { count, eq } from 'drizzle-orm';
 
 @Injectable()
 export class InventoryRepository {
@@ -37,11 +37,19 @@ export class InventoryRepository {
     return result;
   }
 
-  async getItemsByEventId(eventId: string) {
-    return this.db
-      .select()
-      .from(inventoryItems)
-      .where(eq(inventoryItems.eventId, eventId));
+  async getItemsByEventId(eventId: string, skip: number, limit: number) {
+    return await Promise.all([
+      this.db
+        .select({ totalCount: count() })
+        .from(inventoryItems)
+        .where(eq(inventoryItems.eventId, eventId)),
+      this.db
+        .select()
+        .from(inventoryItems)
+        .where(eq(inventoryItems.eventId, eventId))
+        .offset(skip)
+        .limit(limit),
+    ]);
   }
 
   async findById(inventoryId: string) {

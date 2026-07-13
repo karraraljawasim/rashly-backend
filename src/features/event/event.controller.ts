@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Patch,
+  Query,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { EventService } from './event.service';
@@ -16,6 +17,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../../shared/decorators/roles.decorator';
 import { Role } from '../user/enums/user-role.enum';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { OffsetPaginationParamsDto } from '../../shared/dto/offset-pagination-params.dto';
 
 @Controller('events')
 export class EventController {
@@ -29,8 +31,8 @@ export class EventController {
   }
 
   @Get()
-  async getAll() {
-    return await this.eventService.getAll();
+  async getAll(@Query() paginationDto: OffsetPaginationParamsDto) {
+    return await this.eventService.getAll(paginationDto);
   }
 
   @Get(':eventId')

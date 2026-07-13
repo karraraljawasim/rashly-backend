@@ -7,7 +7,7 @@ import { DATABASE_CONNECTION } from '../../core/database/database.providers';
 import * as schema from '../../core/database/schema';
 import { events } from './schema/event.schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { eq } from 'drizzle-orm';
+import { eq, count } from 'drizzle-orm';
 
 @Injectable()
 export class EventRepository {
@@ -29,8 +29,16 @@ export class EventRepository {
     return result;
   }
 
-  async getAll() {
-    return this.db.select().from(events);
+  async getAll(skip: number, limit: number) {
+    return await Promise.all([
+      this.db.select({ totalCount: count() }).from(events),
+      this.db
+        .select()
+        .from(events)
+        .orderBy(events.id)
+        .offset(skip)
+        .limit(limit),
+    ]);
   }
 
   async findById(eventId: string) {

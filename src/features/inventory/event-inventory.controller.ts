@@ -5,6 +5,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
@@ -13,6 +14,7 @@ import { Roles } from '../../shared/decorators/roles.decorator';
 import { RoleGuard } from '../../shared/guards/roles.guard';
 import { Role } from '../user/enums/user-role.enum';
 import { CreateInventoryDto } from './dto/create-inventory.dto';
+import { OffsetPaginationParamsDto } from '../../shared/dto/offset-pagination-params.dto';
 
 @Controller('events/:eventId/inventory')
 export class EventInventoryController {
@@ -29,7 +31,13 @@ export class EventInventoryController {
   }
 
   @Get()
-  async getItemsByEventId(@Param('eventId', ParseUUIDPipe) eventId: string) {
-    return await this.inventoryService.getItemsByEventId(eventId);
+  async getItemsByEventId(
+    @Param('eventId', ParseUUIDPipe) eventId: string,
+    @Query() paginationDto: OffsetPaginationParamsDto,
+  ) {
+    return await this.inventoryService.getItemsByEventId(
+      eventId,
+      paginationDto,
+    );
   }
 }

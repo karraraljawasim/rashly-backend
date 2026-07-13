@@ -3,6 +3,7 @@ import { InventoryRepository } from './inventory.repository';
 import { EventService } from '../event/event.service';
 import { CreateInventoryDto } from './dto/create-inventory.dto';
 import { UpdateInventoryDto } from './dto/update-inventory.dto';
+import { OffsetPaginationParamsDto } from '../../shared/dto/offset-pagination-params.dto';
 
 @Injectable()
 export class InventoryService {
@@ -23,12 +24,38 @@ export class InventoryService {
     });
   }
 
-  async getItemsByEventId(eventId: string) {
+  async getItemsByEventId(
+    eventId: string,
+    pagination: OffsetPaginationParamsDto,
+  ) {
     const event = await this.eventService.getById(eventId);
     if (!event) {
       throw new NotFoundException('Event not found');
     }
-    return await this.inventoryRepository.getItemsByEventId(eventId);
+    const currentPage = pagination.page || 1;
+    const limit = pagination.limit || 10;
+    const skip = (currentPage - 1) * limit;
+
+    const [count, data] = await this.inventoryRepository.getItemsByEventId(
+      eventId,
+      skip,
+      limit,
+    );
+
+    const totalItems = count[0]?.totalCount || 0;
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data,
+      meta: {
+        totalItems,
+        totalPages,
+        currentPage,
+        itemsPerPage: limit,
+        hasNextPage: currentPage < totalPages,
+        hasPreviousPage: currentPage > 1,
+      },
+    };
   }
 
   async getById(inventoryId: string) {

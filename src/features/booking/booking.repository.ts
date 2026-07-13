@@ -9,7 +9,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '../../core/database/schema';
 import { bookings } from './schema/booking.schema';
 import { CreateBookingData } from './types/create-booking-data.types';
-import { and, eq, sum, inArray } from 'drizzle-orm';
+import { and, eq, sum, inArray, count } from 'drizzle-orm';
 import { BookingStatus } from './enums/booking-status.enum';
 import { inventoryItems } from '../../core/database/schema';
 
@@ -71,8 +71,20 @@ export class BookingRepository {
     return result;
   }
 
-  async findBookingsByUserId(userId: string) {
-    return this.db.select().from(bookings).where(eq(bookings.userId, userId));
+  async findBookingsByUserId(userId: string, skip: number, limit: number) {
+    return await Promise.all([
+      this.db
+        .select({ totalCount: count() })
+        .from(bookings)
+        .where(eq(bookings.userId, userId)),
+      this.db
+        .select()
+        .from(bookings)
+        .where(eq(bookings.userId, userId))
+        .orderBy(bookings.id)
+        .offset(skip)
+        .limit(limit),
+    ]);
   }
 
   async cancelBooking(bookingId: string) {
