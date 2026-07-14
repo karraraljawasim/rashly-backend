@@ -33,11 +33,24 @@ export class EventInventoryController {
   @Get()
   async getItemsByEventId(
     @Param('eventId', ParseUUIDPipe) eventId: string,
-    @Query() paginationDto: OffsetPaginationParamsDto,
+    @Query() query: OffsetPaginationParamsDto,
   ) {
-    return await this.inventoryService.getItemsByEventId(
-      eventId,
-      paginationDto,
-    );
+    const { page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
+
+    const { items, totalCountResult } =
+      await this.inventoryService.getItemsByEventId(eventId, skip, limit);
+
+    return {
+      data: items,
+      meta: {
+        total: totalCountResult,
+        currentPage: page,
+        limit,
+        totalPages: Math.ceil(totalCountResult / limit),
+        hasNextPage: page * limit < totalCountResult,
+        hasPreviousPage: page > 1,
+      },
+    };
   }
 }

@@ -72,7 +72,7 @@ export class BookingRepository {
   }
 
   async findBookingsByUserId(userId: string, skip: number, limit: number) {
-    return await Promise.all([
+    const [totalCountResult, items] = await Promise.all([
       this.db
         .select({ totalCount: count() })
         .from(bookings)
@@ -85,6 +85,8 @@ export class BookingRepository {
         .offset(skip)
         .limit(limit),
     ]);
+
+    return { items, totalCountResult: totalCountResult[0]?.totalCount || 0 };
   }
 
   async cancelBooking(bookingId: string) {

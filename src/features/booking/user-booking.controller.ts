@@ -12,8 +12,24 @@ export class UserBookingController {
   @UseGuards(JwtAuthGuard)
   async getBookingsByUserId(
     @GetUser('id') userId: string,
-    @Query() paginationDto: OffsetPaginationParamsDto,
+    @Query() query: OffsetPaginationParamsDto,
   ) {
-    return await this.bookingService.getBookingsByUserId(userId, paginationDto);
+    const { limit = 10, page = 1 } = query;
+    const skip = (page - 1) * limit;
+
+    const { items, totalCountResult } =
+      await this.bookingService.getBookingsByUserId(userId, skip, limit);
+
+    return {
+      data: items,
+      meta: {
+        total: totalCountResult,
+        currentPage: page,
+        limit,
+        totalPages: Math.ceil(totalCountResult / limit),
+        hasNextPage: page * limit < totalCountResult,
+        hasPreviousPage: page > 1,
+      },
+    };
   }
 }

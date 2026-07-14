@@ -30,7 +30,7 @@ export class EventRepository {
   }
 
   async getAll(skip: number, limit: number) {
-    return await Promise.all([
+    const [totalCountResult, items] = await Promise.all([
       this.db.select({ totalCount: count() }).from(events),
       this.db
         .select()
@@ -39,6 +39,8 @@ export class EventRepository {
         .offset(skip)
         .limit(limit),
     ]);
+
+    return { items, totalCountResult: totalCountResult[0]?.totalCount || 0 };
   }
 
   async findById(eventId: string) {

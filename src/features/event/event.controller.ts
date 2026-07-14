@@ -31,8 +31,26 @@ export class EventController {
   }
 
   @Get()
-  async getAll(@Query() paginationDto: OffsetPaginationParamsDto) {
-    return await this.eventService.getAll(paginationDto);
+  async getAll(@Query() query: OffsetPaginationParamsDto) {
+    const { limit = 10, page = 1 } = query;
+    const skip = (page - 1) * limit;
+
+    const { items, totalCountResult } = await this.eventService.getAll(
+      skip,
+      limit,
+    );
+
+    return {
+      data: items,
+      meta: {
+        total: totalCountResult,
+        currentPage: page,
+        limit,
+        totalPages: Math.ceil(totalCountResult / limit),
+        hasNextPage: page * limit < totalCountResult,
+        hasPreviousPage: page > 1,
+      },
+    };
   }
 
   @Get(':eventId')

@@ -38,7 +38,7 @@ export class InventoryRepository {
   }
 
   async getItemsByEventId(eventId: string, skip: number, limit: number) {
-    return await Promise.all([
+    const [totalCountResult, items] = await Promise.all([
       this.db
         .select({ totalCount: count() })
         .from(inventoryItems)
@@ -50,6 +50,8 @@ export class InventoryRepository {
         .offset(skip)
         .limit(limit),
     ]);
+
+    return { items, totalCountResult: totalCountResult[0]?.totalCount || 0 };
   }
 
   async findById(inventoryId: string) {
