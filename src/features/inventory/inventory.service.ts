@@ -1,15 +1,22 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InventoryRepository } from './inventory.repository';
 import { EventService } from '../event/event.service';
 import { CreateInventoryDto } from './dto/create-inventory.dto';
 import { UpdateInventoryDto } from './dto/update-inventory.dto';
+import { InventoryRedisService } from './inventory-redis.service';
 
 @Injectable()
-export class InventoryService {
+export class InventoryService implements OnModuleInit {
   constructor(
     private readonly inventoryRepository: InventoryRepository,
     private readonly eventService: EventService,
+    private readonly inventoryRedisService: InventoryRedisService,
   ) {}
+
+  async onModuleInit() {
+    const items = await this.inventoryRepository.getActiveStockCounts();
+    await this.inventoryRedisService.syncInventoryToRedis(items);
+  }
 
   async create(dto: CreateInventoryDto, eventId: string) {
     const event = await this.eventService.getById(eventId);

@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -6,16 +7,40 @@ import {
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { BookingRepository } from './booking.repository';
 import { Role } from '../user/enums/user-role.enum';
+import { InventoryRedisService } from '../inventory/inventory-redis.service';
 
 @Injectable()
 export class BookingService {
-  constructor(private readonly bookingRepository: BookingRepository) {}
+  constructor(
+    private readonly bookingRepository: BookingRepository,
+    private readonly inventoryRedisService: InventoryRedisService,
+  ) {}
 
   async create(dto: CreateBookingDto, userId: string) {
-    return await this.bookingRepository.create({
-      ...dto,
-      userId,
-    });
+    const reserveResult = await this.inventoryRedisService.reserve(
+      dto.inventoryItemId,
+      dto.quantity,
+    );
+
+    if (reserveResult === 'sold_out') {
+      throw new ConflictException('Out of stock');
+    }
+
+    if (reserveResult === 'not_initialized') {
+      throw new NotFoundException('Inventory not found or not initialized');
+    }
+    try {
+      return await this.bookingRepository.create({
+        ...dto,
+        userId,
+      });
+    } catch (error) {
+      await this.inventoryRedisService.release(
+        dto.inventoryItemId,
+        dto.quantity,
+      );
+      throw error;
+    }
   }
 
   async getById(bookingId: string, userId: string, userRole: Role) {

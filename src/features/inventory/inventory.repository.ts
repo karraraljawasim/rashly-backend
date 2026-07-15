@@ -7,7 +7,9 @@ import { DATABASE_CONNECTION } from '../../core/database/database.providers';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '../../core/database/schema';
 import { inventoryItems } from './schema/inventory.schema';
-import { count, eq } from 'drizzle-orm';
+import { and, count, eq, inArray, sql } from 'drizzle-orm';
+import { bookings } from '../../core/database/schema';
+import { BookingStatus } from '../booking/enums/booking-status.enum';
 
 @Injectable()
 export class InventoryRepository {
@@ -83,5 +85,27 @@ export class InventoryRepository {
       .set(data)
       .where(eq(inventoryItems.id, inventoryId))
       .returning();
+  }
+
+  async getActiveStockCounts() {
+    return this.db
+      .select({
+        id: inventoryItems.id,
+        totalQuantity: inventoryItems.totalQuantity,
+        reservedQuantity:
+          sql<number>`COALESCE(SUM(${bookings.quantity}), 0)`.mapWith(Number),
+      })
+      .from(inventoryItems)
+      .leftJoin(
+        bookings,
+        and(
+          eq(inventoryItems.id, bookings.inventoryItemId),
+          inArray(bookings.status, [
+            BookingStatus.Pending,
+            BookingStatus.Confirmed,
+          ]),
+        ),
+      )
+      .groupBy(inventoryItems.id, inventoryItems.totalQuantity);
   }
 }
