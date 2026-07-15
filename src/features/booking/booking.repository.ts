@@ -1,4 +1,8 @@
-import { Injectable, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { DATABASE_CONNECTION } from '../../core/database/database.providers';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '../../core/database/schema';
@@ -14,7 +18,12 @@ export class BookingRepository {
   ) {}
 
   async create(data: CreateBookingData) {
-    return this.db.insert(bookings).values(data).returning();
+    const [result] = await this.db.insert(bookings).values(data).returning();
+    if (!result) {
+      throw new InternalServerErrorException('Create booking failed');
+    }
+
+    return result;
   }
 
   async findById(bookingId: string) {
@@ -54,5 +63,12 @@ export class BookingRepository {
       .returning();
 
     return result;
+  }
+
+  async updateStatus(bookingId: string, status: BookingStatus) {
+    await this.db
+      .update(bookings)
+      .set({ status: status })
+      .where(eq(bookings.id, bookingId));
   }
 }

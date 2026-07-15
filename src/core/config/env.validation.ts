@@ -23,6 +23,13 @@ class EnvironmentVariables {
 
   @IsString()
   REDIS_URL: string;
+
+  @Type(() => Number)
+  @IsNumber()
+  REDIS_PORT: number;
+
+  @IsString()
+  REDIS_HOST: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

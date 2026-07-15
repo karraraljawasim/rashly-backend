@@ -6,6 +6,7 @@ import {
   pgEnum,
   timestamp,
 } from 'drizzle-orm/pg-core';
+import { InferSelectModel } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import { users } from '../../user/schema/user.schema';
 import { inventoryItems } from '../../inventory/schema/inventory.schema';
@@ -31,5 +32,8 @@ export const bookings = pgTable('bookings', {
   quantity: integer('quantity').notNull().default(1),
   status: bookingStatusEnum('status').notNull().default(BookingStatus.Pending),
   idempotencyKey: varchar('idempotencyKey').notNull().unique(),
+  holdExpiresAt: timestamp().notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+export type BookingRows = InferSelectModel<typeof bookings>;

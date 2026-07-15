@@ -5,10 +5,22 @@ import { BookingRepository } from './booking.repository';
 import { UserBookingController } from './user-booking.controller';
 import { InventoryRedisService } from '../inventory/inventory-redis.service';
 import { InventoryModule } from '../inventory/inventory.module';
+import { BullModule } from '@nestjs/bullmq';
+import { BookingProcessor } from './booking.processor';
 
 @Module({
-  imports: [InventoryModule],
-  providers: [BookingService, BookingRepository, InventoryRedisService],
+  imports: [
+    BullModule.registerQueue({
+      name: 'booking_expiry',
+    }),
+    InventoryModule,
+  ],
+  providers: [
+    BookingService,
+    BookingRepository,
+    InventoryRedisService,
+    BookingProcessor,
+  ],
   controllers: [BookingController, UserBookingController],
 })
 export class BookingModule {}

@@ -8,12 +8,18 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { BookingRepository } from './booking.repository';
 import { Role } from '../user/enums/user-role.enum';
 import { InventoryRedisService } from '../inventory/inventory-redis.service';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
+import { BookingRows } from './schema/booking.schema';
+
+const HOLD_DURATION_MS = 60 * 1000;
 
 @Injectable()
 export class BookingService {
   constructor(
     private readonly bookingRepository: BookingRepository,
     private readonly inventoryRedisService: InventoryRedisService,
+    @InjectQueue('booking_expiry') private bookingQueue: Queue,
   ) {}
 
   async create(dto: CreateBookingDto, userId: string) {
@@ -29,9 +35,13 @@ export class BookingService {
     if (reserveResult === 'not_initialized') {
       throw new NotFoundException('Inventory not found or not initialized');
     }
+
+    const holdExpiresAt = new Date(Date.now() + HOLD_DURATION_MS);
+    let booking: BookingRows;
     try {
-      return await this.bookingRepository.create({
+      booking = await this.bookingRepository.create({
         ...dto,
+        holdExpiresAt,
         userId,
       });
     } catch (error) {
@@ -41,6 +51,17 @@ export class BookingService {
       );
       throw error;
     }
+    const delay = booking.holdExpiresAt.getTime() - Date.now();
+
+    const job = await this.bookingQueue.add(
+      'expiry_hold',
+      { bookingId: booking.id },
+      { delay: Math.max(0, delay) },
+    );
+
+    console.error('Job added:', job.id, 'delay:', delay);
+
+    return booking;
   }
 
   async getById(bookingId: string, userId: string, userRole: Role) {
