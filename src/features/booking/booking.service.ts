@@ -23,6 +23,11 @@ export class BookingService {
   ) {}
 
   async create(dto: CreateBookingDto, userId: string) {
+    const existBooking = await this.bookingRepository.findByIdempotencyKey(
+      dto.idempotencyKey,
+    );
+    if (existBooking) return existBooking;
+
     const reserveResult = await this.inventoryRedisService.reserve(
       dto.inventoryItemId,
       dto.quantity,
@@ -53,13 +58,11 @@ export class BookingService {
     }
     const delay = booking.holdExpiresAt.getTime() - Date.now();
 
-    const job = await this.bookingQueue.add(
+    await this.bookingQueue.add(
       'expiry_hold',
       { bookingId: booking.id },
       { delay: Math.max(0, delay) },
     );
-
-    console.error('Job added:', job.id, 'delay:', delay);
 
     return booking;
   }

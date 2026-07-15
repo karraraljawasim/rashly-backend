@@ -71,4 +71,13 @@ export class BookingRepository {
       .set({ status: status })
       .where(eq(bookings.id, bookingId));
   }
+
+  async findByIdempotencyKey(idempotencyKey: string) {
+    const [result] = await this.db
+      .select()
+      .from(bookings)
+      .where(eq(bookings.idempotencyKey, idempotencyKey));
+
+    return result;
+  }
 }
