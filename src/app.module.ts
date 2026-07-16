@@ -9,20 +9,10 @@ import { SharedModule } from './shared/shared.module';
 import { EventModule } from './features/event/event.module';
 import { InventoryModule } from './features/inventory/inventory.module';
 import { BookingModule } from './features/booking/booking.module';
-import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     CoreModule,
-    BullModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        connection: {
-          port: configService.get('REDIS_PORT'),
-          host: configService.get('REDIS_HOST'),
-        },
-      }),
-    }),
     UserModule,
     AuthModule,
     SharedModule,
