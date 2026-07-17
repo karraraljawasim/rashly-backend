@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as crypto from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { AuthRepository } from './auth.repository';
@@ -20,21 +24,31 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterUserDto) {
+    const user = await this.userService.findByEmail(dto.email);
+    if (user) {
+      throw new ConflictException('User with this email already exists');
+    }
+
     const passwordHash = await bcrypt.hash(
       dto.password,
       AUTH_CONSTANTS.BCRYPT_SALT_ROUNDS,
     );
-    const user = await this.userService.create({
+    const newUser = await this.userService.create({
       fullName: dto.fullName,
       email: dto.email,
       passwordHash,
     });
 
-    return this.issueTokens({ sub: user.id, role: user.role });
+    return this.issueTokens({ sub: newUser.id, role: newUser.role });
   }
 
   async login(dto: LoginUserDto) {
     const user = await this.userService.findByEmail(dto.email);
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
     const isPasswordMatch = await bcrypt.compare(
       dto.password,
       user.passwordHash,
@@ -48,9 +62,9 @@ export class AuthService {
   }
 
   private async issueTokens(payload: JwtPayload): Promise<TokenPair> {
-    const accessToken = this.jwtService.sign(payload);
+    const accessToken = await this.jwtService.signAsync(payload);
 
-    const refreshToken = this.jwtService.sign(payload, {
+    const refreshToken = await this.jwtService.signAsync(payload, {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       expiresIn: this.configService.get<string>(
         'JWT_REFRESH_EXPIRY',
