@@ -80,11 +80,13 @@ export class InventoryRepository {
       totalQuantity?: number;
     },
   ) {
-    return this.db
+    const [result] = await this.db
       .update(inventoryItems)
       .set(data)
       .where(eq(inventoryItems.id, inventoryId))
       .returning();
+
+    return result;
   }
 
   async getActiveStockCounts() {

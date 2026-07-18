@@ -9,6 +9,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { uuidv7 } from 'uuidv7';
 import { events } from '../../event/schema/event.schema';
+import { InferSelectModel } from 'drizzle-orm';
 
 export const inventoryItems = pgTable(
   'inventory_items',
@@ -26,3 +27,5 @@ export const inventoryItems = pgTable(
   },
   (table) => [index('event_id_idx').on(table.eventId)],
 );
+
+export type InventoryRows = InferSelectModel<typeof inventoryItems>;

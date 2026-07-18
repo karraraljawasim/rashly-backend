@@ -67,13 +67,8 @@ export class InventoryService implements OnModuleInit {
       throw new NotFoundException('Inventory not found');
     }
 
-    const [updatedInventory] = await this.inventoryRepository.updateById(
-      inventoryId,
-      {
-        ...data,
-      },
-    );
-
-    return updatedInventory;
+    return await this.inventoryRepository.updateById(inventoryId, {
+      ...data,
+    });
   }
 }
