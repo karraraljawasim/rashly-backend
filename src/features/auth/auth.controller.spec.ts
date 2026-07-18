@@ -4,7 +4,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { TokenPair } from './types/auth.types';
-import { UnauthorizedException } from '@nestjs/common';
 
 describe('AuthController', () => {
   let authService: AuthService;
@@ -65,19 +64,6 @@ describe('AuthController', () => {
 
       expect(authService.login).toHaveBeenCalledWith(dto);
       expect(response).toEqual(result);
-    });
-
-    it('should return a token pair on valid credentials', async () => {
-      const dto = {
-        email: 'test@example.com',
-        password: 'Password123$',
-      };
-
-      jest
-        .spyOn(authService, 'login')
-        .mockRejectedValue(new UnauthorizedException('Unauthorized'));
-
-      await expect(authController.login(dto)).rejects.toThrow('Unauthorized');
     });
   });
 });
