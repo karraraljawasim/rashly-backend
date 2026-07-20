@@ -13,6 +13,7 @@ import { JwtPayload, TokenPair } from './types/auth.types';
 import { AUTH_CONSTANTS } from './constants/auth.constants';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+import { randomUUID } from 'node:crypto';
 
 @Injectable()
 export class AuthService {
@@ -62,14 +63,18 @@ export class AuthService {
   }
 
   private async issueTokens(payload: JwtPayload): Promise<TokenPair> {
-    const accessToken = await this.jwtService.signAsync(payload);
+    const jti = randomUUID();
+    const accessToken = await this.jwtService.signAsync({ ...payload, jti });
 
-    const refreshToken = await this.jwtService.signAsync(payload, {
-      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: this.configService.get<string>(
-        'JWT_REFRESH_EXPIRY',
-      ) as JwtSignOptions['expiresIn'],
-    });
+    const refreshToken = await this.jwtService.signAsync(
+      { ...payload, jti },
+      {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: this.configService.get<string>(
+          'JWT_REFRESH_EXPIRY',
+        ) as JwtSignOptions['expiresIn'],
+      },
+    );
 
     const tokenHash = crypto
       .createHash('sha256')

@@ -24,10 +24,20 @@ export class InventoryService implements OnModuleInit {
       throw new NotFoundException('Event not found');
     }
 
-    return await this.inventoryRepository.create({
+    const newInventory = await this.inventoryRepository.create({
       ...dto,
       eventId,
     });
+
+    await this.inventoryRedisService.syncInventoryToRedis([
+      {
+        id: newInventory.id,
+        totalQuantity: newInventory.totalQuantity,
+        reservedQuantity: 0,
+      },
+    ]);
+
+    return newInventory;
   }
 
   async getItemsByEventId(eventId: string, skip = 0, limit = 10) {

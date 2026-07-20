@@ -1,5 +1,4 @@
 import {
-  IsDate,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -7,7 +6,6 @@ import {
   IsUUID,
   Min,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
 export class CreateBookingDto {
   @IsOptional()
