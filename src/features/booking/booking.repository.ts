@@ -42,7 +42,12 @@ export class BookingRepository {
         .from(bookings)
         .where(eq(bookings.userId, userId)),
       this.db
-        .select()
+        .select({
+          id: bookings.id,
+          quantity: bookings.quantity,
+          status: bookings.status,
+          holdExpiresAt: bookings.holdExpiresAt,
+        })
         .from(bookings)
         .where(eq(bookings.userId, userId))
         .orderBy(bookings.id)

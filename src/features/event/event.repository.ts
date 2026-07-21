@@ -33,7 +33,11 @@ export class EventRepository {
     const [totalCountResult, items] = await Promise.all([
       this.db.select({ totalCount: count() }).from(events),
       this.db
-        .select()
+        .select({
+          id: events.id,
+          name: events.name,
+          saleStartsAt: events.saleStartsAt,
+        })
         .from(events)
         .orderBy(events.id)
         .offset(skip)

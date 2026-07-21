@@ -46,7 +46,12 @@ export class InventoryRepository {
         .from(inventoryItems)
         .where(eq(inventoryItems.eventId, eventId)),
       this.db
-        .select()
+        .select({
+          id: inventoryItems.id,
+          name: inventoryItems.name,
+          price: inventoryItems.price,
+          totalQuantity: inventoryItems.totalQuantity,
+        })
         .from(inventoryItems)
         .where(eq(inventoryItems.eventId, eventId))
         .offset(skip)
